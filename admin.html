@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EdWay | Admin Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    body { background: #f4f7fc; }
+    .stat-card { transition: all 0.2s ease; }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 20px 25px -12px rgba(0,0,0,0.1); }
+    .nav-item.active { background: rgba(255,255,255,0.15); border-left: 4px solid #ffcd3c; }
+
+    /* Chatbot Styles */
+    .chatbot-widget {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+    }
+    
+    .chatbot-toggle {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #2c3e8f 0%, #1e2c6a 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+    }
+    
+    .chatbot-toggle:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+    }
+    
+    .chatbot-toggle i {
+      color: white;
+      font-size: 28px;
+    }
+    
+    .chatbot-window {
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      width: 380px;
+      height: 550px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 1000;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+    
+    .chatbot-window.open {
+      display: flex;
+    }
+    
+    .chatbot-header {
+      background: linear-gradient(135deg, #2c3e8f 0%, #1e2c6a 100%);
+      color: white;
+      padding: 15px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .chatbot-header h4 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .chatbot-header h4 i {
+      margin-right: 8px;
+    }
+    
+    .chatbot-close {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 20px;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+    
+    .chatbot-close:hover {
+      opacity: 1;
+    }
+    
+    .chatbot-messages {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      background: #f8f9fa;
+    }
+    
+    .message {
+      margin-bottom: 12px;
+      display: flex;
+    }
+    
+    .message.user {
+      justify-content: flex-end;
+    }
+    
+    .message.bot {
+      justify-content: flex-start;
+    }
+    
+    .message-content {
+      max-width: 80%;
+      padding: 10px 14px;
+      border-radius: 18px;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    
+    .message.user .message-content {
+      background: #2c3e8f;
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+    
+    .message.bot .message-content {
+      background: white;
+      color: #333;
+      border-bottom-left-radius: 4px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    
+    .chatbot-input {
+      padding: 15px;
+      border-top: 1px solid #e0e0e0;
+      display: flex;
+      gap: 10px;
+      background: white;
+    }
+    
+    .chatbot-input input {
+      flex: 1;
+      padding: 10px 14px;
+      border: 1px solid #ddd;
+      border-radius: 25px;
+      outline: none;
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+    
+    .chatbot-input input:focus {
+      border-color: #2c3e8f;
+    }
+    
+    .chatbot-input button {
+      background: #2c3e8f;
+      color: white;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .chatbot-input button:hover {
+      background: #1e2c6a;
+    }
+    
+    .typing-indicator {
+      display: flex;
+      gap: 4px;
+      padding: 8px 12px;
+    }
+    
+    .typing-indicator span {
+      width: 8px;
+      height: 8px;
+      background: #999;
+      border-radius: 50%;
+      animation: bounce 1.4s infinite ease-in-out;
+    }
+    
+    .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+    .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+    
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(44, 62, 143, 0.4); }
+      70% { box-shadow: 0 0 0 15px rgba(44, 62, 143, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(44, 62, 143, 0); }
+    }
+    
+    .chatbot-toggle {
+      animation: pulse 2s infinite;
+    }
+  </style>
+</head>
+<body>
+
+<div class="flex h-screen overflow-hidden">
+  <!-- SIDEBAR -->
+  <aside class="w-72 bg-gradient-to-br from-[#0a2540] to-[#1f3a5f] text-white shadow-2xl flex flex-col">
+    <div class="px-6 pt-8 pb-6 border-b border-white/10">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#ffcd3c] to-[#ffa62b] flex items-center justify-center">
+          <i class="fas fa-user-shield text-[#1e2f4e] text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl font-extrabold tracking-tight">EdWay<span class="text-[#ffcd3c]">.</span></h1>
+          <p class="text-xs text-blue-200/80">Admin Portal</p>
+        </div>
+      </div>
+    </div>
+    
+    <nav class="flex-1 px-4 py-8 space-y-1">
+      <div class="nav-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all hover:bg-white/10 mb-1" data-nav="dashboard">
+        <i class="fas fa-tachometer-alt w-5 text-blue-200"></i>
+        <span class="font-medium">Dashboard</span>
+      </div>
+      <div class="nav-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all hover:bg-white/10 mb-1" data-nav="users">
+        <i class="fas fa-users w-5 text-blue-200"></i>
+        <span class="font-medium">Manage Users</span>
+      </div>
+      <div class="nav-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all hover:bg-white/10 mb-1" data-nav="reports">
+        <i class="fas fa-chart-line w-5 text-blue-200"></i>
+        <span class="font-medium">System Reports</span>
+      </div>
+    </nav>
+    
+    <div class="p-5 border-t border-white/10 mt-auto">
+      <div class="flex items-center gap-3 bg-white/5 rounded-xl p-3 backdrop-blur-sm">
+        <div class="w-9 h-9 rounded-full bg-[#ffcd3c] flex items-center justify-center text-[#1f3a5f] font-bold shadow">
+          <span id="adminInitial">A</span>
+        </div>
+        <div class="flex-1">
+          <p class="text-sm font-semibold" id="adminName">Admin</p>
+          <p class="text-[11px] text-blue-200/70">Administrator</p>
+        </div>
+        <button onclick="logout()" class="text-white/70 hover:text-white transition-all" title="Logout">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 overflow-y-auto bg-[#f0f4f9]">
+    <!-- Top Bar -->
+    <div class="sticky top-0 z-20 bg-white/80 backdrop-blur-md shadow-sm px-8 py-4 flex justify-between items-center border-b border-gray-200">
+      <div>
+        <h2 id="pageTitle" class="text-2xl font-bold text-[#1e2f4e]">Admin Dashboard</h2>
+        <p class="text-sm text-gray-500 mt-0.5">Manage users, roles, and system settings</p>
+      </div>
+      <div class="bg-white rounded-full shadow-sm px-4 py-2 text-sm font-medium text-gray-700 border border-gray-200">
+        <i class="fas fa-crown mr-2 text-yellow-500"></i> Administrator
+      </div>
+    </div>
+
+    <!-- Dynamic Content -->
+    <div id="pageContent" class="p-6 md:p-8"></div>
+  </main>
+</div>
+
+<!-- Add/Edit User Modal -->
+<div id="userModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full modal-enter">
+    <div class="bg-gradient-to-r from-[#0a2540] to-[#1f3a5f] px-6 py-4 flex justify-between items-center">
+      <h3 class="text-xl font-bold text-white" id="modalTitle">Add New User</h3>
+      <button onclick="closeUserModal()" class="text-white/80 hover:text-white text-2xl">&times;</button>
+    </div>
+    <div class="p-6 space-y-4">
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">Full Name *</label>
+        <input type="text" id="userName" placeholder="e.g., John Doe" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">Email *</label>
+        <input type="email" id="userEmail" placeholder="user@edway.com" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">Password *</label>
+        <input type="password" id="userPassword" placeholder="Enter password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">Role *</label>
+        <select id="userRole" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+          <option value="STUDENT">👨‍🎓 Student</option>
+          <option value="TEACHER">👩‍🏫 Teacher</option>
+          <option value="ADMIN">👑 Admin</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">Class (for students)</label>
+        <input type="text" id="userClass" placeholder="e.g., Grade 10-A" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+      </div>
+      <div class="flex gap-3 pt-3">
+        <button onclick="closeUserModal()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">Cancel</button>
+        <button onclick="saveUser()" class="flex-1 bg-[#2c3e8f] text-white rounded-lg px-4 py-2 hover:bg-[#1e2c6a] transition font-medium">Save User</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AI Chatbot Bubble -->
+<div class="chatbot-widget">
+  <div class="chatbot-toggle" onclick="toggleChatbot()">
+    <i class="fas fa-robot"></i>
+  </div>
+  <div class="chatbot-window" id="chatbotWindow">
+    <div class="chatbot-header">
+      <h4><i class="fas fa-robot"></i> EdWay AI Assistant</h4>
+      <button class="chatbot-close" onclick="toggleChatbot()">&times;</button>
+    </div>
+    <div class="chatbot-messages" id="chatMessages">
+      <div class="message bot">
+        <div class="message-content">
+          👋 Hello Admin! I'm your EdWay AI Assistant.<br><br>
+          Ask me about:<br>
+          • 👥 Managing users (add/edit/delete)<br>
+          • 📊 System-wide reports and analytics<br>
+          • 📈 Platform statistics<br>
+          • 🔐 User roles and permissions<br>
+          • 💡 System management tips
+        </div>
+      </div>
+    </div>
+    <div class="chatbot-input">
+      <input type="text" id="chatInput" placeholder="Type your question here..." onkeypress="if(event.key==='Enter') sendMessage()">
+      <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
+</div>
+
+<script>
+const token = localStorage.getItem("token");
+const role = localStorage.getItem("role");
+
+if (!token) {
+  window.location.href = "login.html";
+}
+
+if (role !== "admin") {
+  alert("Access denied. Admin only.");
+  window.location.href = "login.html";
+}
+
+let allUsers = [];
+let editingUserId = null;
+let isWaitingForResponse = false;
+let systemStats = {};
+
+async function apiCall(endpoint, options = {}) {
+  try {
+    const res = await fetch(`http://127.0.0.1:8000${endpoint}`, {
+      ...options,
+      headers: {
+        "Authorization": "Bearer " + token,
+        "Content-Type": "application/json"
+      }
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.error("API Error:", err);
+    return null;
+  }
+}
+
+async function loadUsers() {
+  const data = await apiCall("/admin/users");
+  allUsers = data || [];
+}
+
+async function loadStats() {
+  systemStats = await apiCall("/admin/stats") || {};
+}
+
+async function renderDashboard() {
+  document.getElementById("pageTitle").innerHTML = "<i class='fas fa-chart-pie mr-2'></i> Admin Dashboard";
+  
+  await loadStats();
+  await loadUsers();
+  
+  const activeUsers = allUsers.filter(u => u.is_active).length;
+  const completionRate = systemStats.total_assignments ? Math.round((systemStats.total_submissions || 0) / (systemStats.total_assignments * (systemStats.total_students || 1)) * 100) : 0;
+  
+  const html = `
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div class="stat-card bg-white rounded-2xl shadow-md p-6 border-l-8 border-l-blue-500">
+        <div class="flex justify-between"><div><p class="text-gray-500 text-sm">👥 Total Users</p><p class="text-3xl font-bold">${systemStats.total_users || 0}</p><p class="text-xs text-gray-400">${activeUsers} active</p></div><i class="fas fa-users text-3xl text-blue-500 opacity-70"></i></div>
+      </div>
+      <div class="stat-card bg-white rounded-2xl shadow-md p-6 border-l-8 border-l-green-500">
+        <div><p class="text-gray-500 text-sm">👨‍🎓 Students</p><p class="text-3xl font-bold">${systemStats.total_students || 0}</p></div>
+      </div>
+      <div class="stat-card bg-white rounded-2xl shadow-md p-6 border-l-8 border-l-amber-500">
+        <div><p class="text-gray-500 text-sm">👩‍🏫 Teachers</p><p class="text-3xl font-bold">${systemStats.total_teachers || 0}</p></div>
+      </div>
+      <div class="stat-card bg-white rounded-2xl shadow-md p-6 border-l-8 border-l-purple-500">
+        <div><p class="text-gray-500 text-sm">📋 Assignments</p><p class="text-3xl font-bold">${systemStats.total_assignments || 0}</p></div>
+      </div>
+    </div>
+    
+    <div class="grid lg:grid-cols-2 gap-8 mb-8">
+      <div class="bg-white rounded-2xl shadow-md p-5">
+        <h3 class="font-bold text-lg mb-3"><i class="fas fa-chart-line mr-2 text-blue-600"></i> Platform Overview</h3>
+        <canvas id="overviewChart" height="200"></canvas>
+      </div>
+      <div class="bg-white rounded-2xl shadow-md p-5">
+        <h3 class="font-bold text-lg mb-3"><i class="fas fa-tasks mr-2 text-green-600"></i> Activity Summary</h3>
+        <div class="space-y-3">
+          <div class="flex justify-between p-2 bg-gray-50 rounded"><span>📝 Total Submissions</span><span class="font-bold">${systemStats.total_submissions || 0}</span></div>
+          <div class="flex justify-between p-2 bg-gray-50 rounded"><span>📅 Attendance Records</span><span class="font-bold">${systemStats.total_attendance || 0}</span></div>
+          <div class="flex justify-between p-2 bg-gray-50 rounded"><span>✅ Completion Rate</span><span class="font-bold">${completionRate}%</span></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-white rounded-2xl shadow-md p-5">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-bold text-lg"><i class="fas fa-users mr-2 text-purple-600"></i> Recent Users</h3>
+        <button onclick="switchToUsers()" class="text-blue-600 text-sm hover:underline">View All →</button>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-gray-50"><tr><th class="px-4 py-2 text-left">Name</th><th class="px-4 py-2 text-left">Email</th><th class="px-4 py-2 text-left">Role</th><th class="px-4 py-2 text-left">Status</th></tr></thead>
+          <tbody>${allUsers.slice(0,5).map(u => `<tr class="border-t"><td class="px-4 py-2 font-medium">${escapeHtml(u.name)}</td><td class="px-4 py-2 text-gray-600">${escapeHtml(u.email)}</td><td class="px-4 py-2"><span class="px-2 py-1 rounded text-xs ${u.role === 'ADMIN' ? 'bg-purple-100 text-purple-700' : u.role === 'TEACHER' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}">${u.role}</span></td><td class="px-4 py-2"><span class="${u.is_active ? 'text-green-600' : 'text-red-600'}">${u.is_active ? 'Active' : 'Inactive'}</span></td></tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+  
+  document.getElementById("pageContent").innerHTML = html;
+  
+  setTimeout(() => {
+    const ctx = document.getElementById('overviewChart')?.getContext('2d');
+    if (ctx) {
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: { labels: ['Students', 'Teachers', 'Admins'], datasets: [{ data: [systemStats.total_students || 0, systemStats.total_teachers || 0, (systemStats.total_users || 0) - (systemStats.total_students || 0) - (systemStats.total_teachers || 0)], backgroundColor: ['#3b82f6', '#10b981', '#f59e0b'] }] }
+      });
+    }
+  }, 100);
+}
+
+async function renderUsers() {
+  document.getElementById("pageTitle").innerHTML = "<i class='fas fa-users mr-2'></i> Manage Users";
+  await loadUsers();
+  
+  const html = `
+    <div class="mb-4">
+      <button onclick="openAddUserModal()" class="bg-[#2c3e8f] text-white px-4 py-2 rounded-lg hover:bg-[#1e2c6a] transition"><i class="fas fa-plus mr-2"></i>Add New User</button>
+    </div>
+    <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full">
+          <thead class="bg-gray-100">
+            <tr><th class="px-6 py-3 text-left">Name</th><th class="px-6 py-3 text-left">Email</th><th class="px-6 py-3 text-left">Role</th><th class="px-6 py-3 text-left">Class</th><th class="px-6 py-3 text-left">Status</th><th class="px-6 py-3 text-left">Actions</th></tr>
+          </thead>
+          <tbody>
+            ${allUsers.map(u => `
+              <tr class="border-t hover:bg-gray-50 transition">
+                <td class="px-6 py-4 font-medium">${escapeHtml(u.name)}</td>
+                <td class="px-6 py-4 text-gray-600">${escapeHtml(u.email)}</td>
+                <td class="px-6 py-4"><span class="px-2 py-1 rounded text-xs ${u.role === 'ADMIN' ? 'bg-purple-100 text-purple-700' : u.role === 'TEACHER' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}">${u.role}</span></td>
+                <td class="px-6 py-4">${u.class_name || '-'}</td>
+                <td class="px-6 py-4"><span class="${u.is_active ? 'text-green-600' : 'text-red-600'}">${u.is_active ? 'Active' : 'Inactive'}</span></td>
+                <td class="px-6 py-4">
+                  <button onclick="editUser(${u.id})" class="text-blue-600 hover:text-blue-800 mr-2" title="Edit"><i class="fas fa-edit"></i></button>
+                  <button onclick="toggleUserStatus(${u.id}, ${!u.is_active})" class="text-${u.is_active ? 'red' : 'green'}-600 hover:text-${u.is_active ? 'red' : 'green'}-800 mr-2" title="${u.is_active ? 'Deactivate' : 'Activate'}"><i class="fas fa-${u.is_active ? 'ban' : 'check-circle'}"></i></button>
+                  <button onclick="deleteUser(${u.id})" class="text-red-600 hover:text-red-800" title="Delete"><i class="fas fa-trash"></i></button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+  document.getElementById("pageContent").innerHTML = html;
+}
+
+async function renderReports() {
+  document.getElementById("pageTitle").innerHTML = "<i class='fas fa-chart-line mr-2'></i> System Reports";
+  await loadStats();
+  
+  const html = `
+    <div class="grid lg:grid-cols-2 gap-6">
+      <div class="bg-white rounded-2xl shadow-md p-6">
+        <h3 class="font-bold text-lg mb-3"><i class="fas fa-chart-bar mr-2 text-blue-600"></i> Platform Statistics</h3>
+        <canvas id="reportChart" height="250"></canvas>
+      </div>
+      <div class="bg-white rounded-2xl shadow-md p-6">
+        <h3 class="font-bold text-lg mb-3"><i class="fas fa-info-circle mr-2 text-purple-600"></i> Detailed Summary</h3>
+        <div class="space-y-3">
+          <div class="flex justify-between p-3 bg-gray-50 rounded"><span>👥 Total Registered Users</span><span class="font-bold">${systemStats.total_users || 0}</span></div>
+          <div class="flex justify-between p-3 bg-gray-50 rounded"><span>👨‍🎓 Total Students</span><span class="font-bold">${systemStats.total_students || 0}</span></div>
+          <div class="flex justify-between p-3 bg-gray-50 rounded"><span>👩‍🏫 Total Teachers</span><span class="font-bold">${systemStats.total_teachers || 0}</span></div>
+          <div class="flex justify-between p-3 bg-gray-50 rounded"><span>📋 Total Assignments Created</span><span class="font-bold">${systemStats.total_assignments || 0}</span></div>
+          <div class="flex justify-between p-3 bg-gray-50 rounded"><span>📝 Total Submissions</span><span class="font-bold">${systemStats.total_submissions || 0}</span></div>
+          <div class="flex justify-between p-3 bg-gray-50 rounded"><span>📅 Attendance Records</span><span class="font-bold">${systemStats.total_attendance || 0}</span></div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.getElementById("pageContent").innerHTML = html;
+  
+  setTimeout(() => {
+    const ctx = document.getElementById('reportChart')?.getContext('2d');
+    if (ctx) {
+      new Chart(ctx, {
+        type: 'bar',
+        data: { labels: ['Users', 'Assignments', 'Submissions', 'Attendance'], datasets: [{ label: 'Count', data: [systemStats.total_users || 0, systemStats.total_assignments || 0, systemStats.total_submissions || 0, systemStats.total_attendance || 0], backgroundColor: '#2c3e8f' }] }
+      });
+    }
+  }, 100);
+}
+
+// ==================== CHATBOT FUNCTIONS ====================
+
+function toggleChatbot() {
+  const window = document.getElementById('chatbotWindow');
+  window.classList.toggle('open');
+}
+
+async function sendMessage() {
+  if (isWaitingForResponse) return;
+  
+  const input = document.getElementById('chatInput');
+  const message = input.value.trim();
+  if (!message) return;
+  
+  addMessage(message, 'user');
+  input.value = '';
+  
+  showTypingIndicator();
+  isWaitingForResponse = true;
+  
+  try {
+    await loadStats();
+    await loadUsers();
+    
+    const totalUsers = systemStats.total_users || 0;
+    const totalStudents = systemStats.total_students || 0;
+    const totalTeachers = systemStats.total_teachers || 0;
+    const totalAssignments = systemStats.total_assignments || 0;
+    const totalSubmissions = systemStats.total_submissions || 0;
+    const totalAttendance = systemStats.total_attendance || 0;
+    const activeUsers = allUsers.filter(u => u.is_active).length;
+    
+    const lowerMsg = message.toLowerCase();
+    let reply = "";
+    
+    if (lowerMsg.includes('user') || lowerMsg.includes('manage') || lowerMsg.includes('add') || lowerMsg.includes('create user')) {
+      reply = `👥 System has ${totalUsers} total users (${totalStudents} students, ${totalTeachers} teachers, ${totalUsers - totalStudents - totalTeachers} admins). ${activeUsers} are active.\n\nTo manage users:\n1. Go to "Manage Users" tab\n2. Click "Add New User"\n3. Fill name, email, password, role\n4. Save - user will be created immediately!\n\nYou can also edit, activate/deactivate, or delete existing users.`;
+    }
+    else if (lowerMsg.includes('student')) {
+      reply = `👨‍🎓 There are ${totalStudents} students registered on the platform.\n\nTo manage students:\n• View all students in Manage Users\n• Filter by role "STUDENT"\n• Edit their class information\n• Deactivate inactive students\n• Add new students as needed`;
+    }
+    else if (lowerMsg.includes('teacher')) {
+      reply = `👩‍🏫 There are ${totalTeachers} teachers currently teaching.\n\nTeacher management:\n• Create new teacher accounts\n• Assign appropriate permissions\n• Monitor teacher activity through reports\n• Deactivate if needed`;
+    }
+    else if (lowerMsg.includes('assignment')) {
+      reply = `📋 Platform has ${totalAssignments} total assignments created by teachers, with ${totalSubmissions} student submissions.\n\nTeachers create assignments, students submit work, and teachers grade them. You can monitor this activity in System Reports.`;
+    }
+    else if (lowerMsg.includes('report') || lowerMsg.includes('statistic') || lowerMsg.includes('analytics')) {
+      reply = `📊 Current Platform Statistics:\n• 👥 Users: ${totalUsers}\n• 👨‍🎓 Students: ${totalStudents}\n• 👩‍🏫 Teachers: ${totalTeachers}\n• 📋 Assignments: ${totalAssignments}\n• 📝 Submissions: ${totalSubmissions}\n• 📅 Attendance Records: ${totalAttendance}\n\nCheck the "System Reports" tab for visual charts and detailed analytics!`;
+    }
+    else if (lowerMsg.includes('attendance')) {
+      reply = `📅 Total attendance records: ${totalAttendance}.\n\nTeachers mark attendance daily for students. Students can view their attendance history and receive notifications for late/absent marks.`;
+    }
+    else if (lowerMsg.includes('role') || lowerMsg.includes('permission')) {
+      reply = `🔐 Role-based access control:\n\n• ADMIN: Full system access, user management, system reports\n• TEACHER: Create assignments, grade submissions, mark attendance, view class reports\n• STUDENT: Submit assignments, view grades, check attendance, receive notifications\n\nYou can assign/change roles when adding or editing users.`;
+    }
+    else if (lowerMsg.includes('hello') || lowerMsg.includes('hi')) {
+      reply = `👋 Hello Admin! Welcome to EdWay. I can help you manage users, view system reports, and monitor platform activity. What would you like to know?`;
+    }
+    else if (lowerMsg.includes('tip') || lowerMsg.includes('advice')) {
+      const tips = [
+        "📊 Regularly check System Reports to monitor platform growth and engagement!",
+        "👥 Periodically review inactive users and clean up the database.",
+        "📈 Track assignment completion rates to identify areas needing improvement.",
+        "🔐 Ensure teachers and students have appropriate role assignments.",
+        "💡 Use the Manage Users section to quickly onboard new teachers or students."
+      ];
+      reply = tips[Math.floor(Math.random() * tips.length)];
+    }
+    else if (lowerMsg.includes('help')) {
+      reply = `💡 Admin Help Guide:\n\n• "Manage Users" - Add/edit/delete users, assign roles\n• "System Reports" - View platform analytics and statistics\n• "Dashboard" - Quick overview of key metrics\n\nI can answer questions about:\n• User management 📝\n• Platform statistics 📊\n• Role permissions 🔐\n• System analytics 📈\n\nWhat would you like help with?`;
+    }
+    else {
+      reply = `I'm here to help you manage the EdWay platform! You can ask me about:\n• Managing users (add/edit/delete) 👥\n• System reports and analytics 📊\n• Platform statistics 📈\n• User roles and permissions 🔐\n• Admin tips and best practices 💡\n\nWhat would you like to know?`;
+    }
+    
+    removeTypingIndicator();
+    addMessage(reply, 'bot');
+    
+  } catch (error) {
+    console.error('Chat error:', error);
+    removeTypingIndicator();
+    addMessage("I'm having trouble connecting. Please try again in a moment.", 'bot');
+  }
+  
+  isWaitingForResponse = false;
+}
+
+function addMessage(text, sender) {
+  const messagesDiv = document.getElementById('chatMessages');
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `message ${sender}`;
+  messageDiv.innerHTML = `<div class="message-content">${escapeHtml(text).replace(/\n/g, '<br>')}</div>`;
+  messagesDiv.appendChild(messageDiv);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function showTypingIndicator() {
+  const messagesDiv = document.getElementById('chatMessages');
+  const typingDiv = document.createElement('div');
+  typingDiv.className = 'message bot';
+  typingDiv.id = 'typingIndicator';
+  typingDiv.innerHTML = `<div class="message-content"><div class="typing-indicator"><span></span><span></span><span></span></div></div>`;
+  messagesDiv.appendChild(typingDiv);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function removeTypingIndicator() {
+  const indicator = document.getElementById('typingIndicator');
+  if (indicator) indicator.remove();
+}
+
+// Modal Functions
+function openAddUserModal() {
+  editingUserId = null;
+  document.getElementById("modalTitle").innerText = "Add New User";
+  document.getElementById("userName").value = "";
+  document.getElementById("userEmail").value = "";
+  document.getElementById("userPassword").value = "";
+  document.getElementById("userRole").value = "STUDENT";
+  document.getElementById("userClass").value = "";
+  document.getElementById("userModal").classList.remove("hidden");
+}
+
+function closeUserModal() {
+  document.getElementById("userModal").classList.add("hidden");
+}
+
+async function editUser(id) {
+  const user = allUsers.find(u => u.id === id);
+  if (user) {
+    editingUserId = id;
+    document.getElementById("modalTitle").innerText = "Edit User";
+    document.getElementById("userName").value = user.name;
+    document.getElementById("userEmail").value = user.email;
+    document.getElementById("userPassword").value = "";
+    document.getElementById("userRole").value = user.role;
+    document.getElementById("userClass").value = user.class_name || "";
+    document.getElementById("userModal").classList.remove("hidden");
+  }
+}
+
+async function saveUser() {
+  const name = document.getElementById("userName").value;
+  const email = document.getElementById("userEmail").value;
+  const password = document.getElementById("userPassword").value;
+  const role = document.getElementById("userRole").value;
+  const className = document.getElementById("userClass").value;
+  
+  if (!name || !email) {
+    alert("Name and email are required");
+    return;
+  }
+  
+  if (!editingUserId && !password) {
+    alert("Password is required for new users");
+    return;
+  }
+  
+  if (editingUserId) {
+    await fetch(`http://127.0.0.1:8000/admin/users/${editingUserId}?name=${encodeURIComponent(name)}&role=${role}&class_name=${encodeURIComponent(className)}`, {
+      method: "PUT",
+      headers: { "Authorization": "Bearer " + token }
+    });
+  } else {
+    await fetch(`http://127.0.0.1:8000/admin/users`, {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password, role, class_name: className })
+    });
+  }
+  
+  closeUserModal();
+  await renderUsers();
+  alert(editingUserId ? "User updated!" : "User created!");
+}
+
+async function toggleUserStatus(id, activate) {
+  await fetch(`http://127.0.0.1:8000/admin/users/${id}?is_active=${activate}`, {
+    method: "PUT",
+    headers: { "Authorization": "Bearer " + token }
+  });
+  await renderUsers();
+}
+
+async function deleteUser(id) {
+  if (confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
+    await fetch(`http://127.0.0.1:8000/admin/users/${id}`, {
+      method: "DELETE",
+      headers: { "Authorization": "Bearer " + token }
+    });
+    await renderUsers();
+    alert("User deleted");
+  }
+}
+
+function switchToUsers() {
+  renderUsers();
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelector('[data-nav="users"]').classList.add('active');
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  });
+}
+
+function logout() {
+  localStorage.clear();
+  window.location.href = "login.html";
+}
+
+// Navigation
+function attachNavEvents() {
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.removeEventListener('click', navHandler);
+    el.addEventListener('click', navHandler);
+  });
+}
+
+async function navHandler(e) {
+  const view = this.getAttribute('data-nav');
+  if (view === 'dashboard') await renderDashboard();
+  else if (view === 'users') await renderUsers();
+  else if (view === 'reports') await renderReports();
+  
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  this.classList.add('active');
+}
+
+// Initialize
+async function init() {
+  const userName = localStorage.getItem("user_name") || "Admin";
+  document.getElementById("adminName").innerText = userName;
+  document.getElementById("adminInitial").innerText = userName.charAt(0).toUpperCase();
+  
+  await renderDashboard();
+  attachNavEvents();
+}
+
+init();
+</script>
+</body>
+</html>

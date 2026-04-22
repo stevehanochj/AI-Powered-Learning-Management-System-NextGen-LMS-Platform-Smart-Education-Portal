@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EdWay | Sign In to Learning Platform</title>
+  
+  <!-- Tailwind CSS + Font Awesome + Google Fonts -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+  
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    body {
+      background: linear-gradient(135deg, #0a2540 0%, #1f3a5f 50%, #2c3e8f 100%);
+      background-attachment: fixed;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+    
+    .glass-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 25px 40px -12px rgba(0, 0, 0, 0.25);
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #2c3e8f 0%, #1e2c6a 100%);
+      transition: all 0.2s ease;
+    }
+    
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #1e2c6a 0%, #162054 100%);
+      transform: scale(1.02);
+      box-shadow: 0 10px 20px -5px rgba(44, 62, 143, 0.4);
+    }
+    
+    .social-btn {
+      transition: all 0.2s ease;
+    }
+    
+    .social-btn:hover {
+      transform: translateY(-2px);
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(5deg); }
+    }
+    
+    .float-1 { animation: float 6s ease-in-out infinite; }
+    .float-2 { animation: float 8s ease-in-out infinite reverse; }
+    .float-3 { animation: float 7s ease-in-out infinite 1s; }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+    
+    .shake-animation {
+      animation: shake 0.3s ease-in-out;
+    }
+    
+    .input-field {
+      transition: all 0.2s ease;
+    }
+    
+    .input-field:focus {
+      box-shadow: 0 0 0 3px rgba(44, 62, 143, 0.1);
+    }
+  </style>
+</head>
+<body>
+  
+  <!-- Background decorative elements -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute top-20 left-10 w-64 h-64 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 float-1"></div>
+    <div class="absolute bottom-20 right-10 w-80 h-80 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 float-2"></div>
+    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 float-3"></div>
+  </div>
+  
+  <!-- Main Container -->
+  <div class="relative z-10 w-full max-w-md mx-auto px-4 py-8">
+    
+    <!-- Logo / Brand Section -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center justify-center w-20 h-20 bg-white/10 backdrop-blur-lg rounded-2xl shadow-xl mb-4">
+        <i class="fas fa-graduation-cap text-4xl text-white"></i>
+      </div>
+      <h1 class="text-4xl font-bold text-white tracking-tight">EdWay<span class="text-yellow-300">.</span></h1>
+      <p class="text-blue-100 mt-2 text-sm">Next-generation Learning Management System</p>
+    </div>
+    
+    <!-- Login Form Card -->
+    <div class="glass-card rounded-2xl shadow-2xl p-8 md:p-10">
+      <div class="text-center mb-8">
+        <h2 class="text-2xl font-bold text-gray-800">Welcome Back</h2>
+        <p class="text-gray-500 text-sm mt-2">Sign in to continue your learning journey</p>
+      </div>
+      
+      <!-- Email Input -->
+      <div class="mb-5">
+        <label class="block text-gray-700 text-sm font-semibold mb-2">
+          <i class="fas fa-envelope mr-2 text-blue-600"></i> Email Address
+        </label>
+        <div class="relative">
+          <input type="email" id="email" 
+                 class="input-field w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 bg-gray-50"
+                 placeholder="Enter your email">
+          <i class="fas fa-user absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+        </div>
+      </div>
+      
+      <!-- Password Input -->
+      <div class="mb-6">
+        <label class="block text-gray-700 text-sm font-semibold mb-2">
+          <i class="fas fa-lock mr-2 text-blue-600"></i> Password
+        </label>
+        <div class="relative">
+          <input type="password" id="password" 
+                 class="input-field w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 bg-gray-50"
+                 placeholder="Enter your password">
+          <button type="button" id="togglePassword" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Forgot Password Link -->
+      <div class="text-right mb-6">
+        <a href="#" class="text-sm text-blue-600 hover:text-blue-800 transition">Forgot Password?</a>
+      </div>
+      
+      <!-- Login Button -->
+      <button onclick="login()" id="loginBtn" class="btn-primary w-full text-white font-bold py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2">
+        <i class="fas fa-sign-in-alt"></i>
+        <span>Sign In</span>
+      </button>
+      
+      <!-- Divider -->
+      <div class="flex items-center justify-center my-8">
+        <div class="h-px bg-gray-200 flex-1"></div>
+        <span class="text-gray-400 text-xs mx-4">OR</span>
+        <div class="h-px bg-gray-200 flex-1"></div>
+      </div>
+      
+      <!-- Social Login Options -->
+      <div class="space-y-3">
+        <button onclick="socialLogin('google')" class="social-btn w-full bg-white border border-gray-300 text-gray-700 font-medium py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-3 hover:bg-gray-50 hover:border-gray-400">
+          <i class="fab fa-google text-red-500 text-lg"></i>
+          <span>Continue with Google</span>
+        </button>
+        
+        <button onclick="socialLogin('facebook')" class="social-btn w-full bg-white border border-gray-300 text-gray-700 font-medium py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-3 hover:bg-gray-50 hover:border-gray-400">
+          <i class="fab fa-facebook-f text-blue-600 text-lg"></i>
+          <span>Continue with Facebook</span>
+        </button>
+        
+        <button onclick="socialLogin('apple')" class="social-btn w-full bg-white border border-gray-300 text-gray-700 font-medium py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-3 hover:bg-gray-50 hover:border-gray-400">
+          <i class="fab fa-apple text-gray-800 text-lg"></i>
+          <span>Continue with Apple</span>
+        </button>
+      </div>
+      
+      <!-- Sign Up Link -->
+      <div class="mt-8 text-center">
+        <p class="text-gray-500 text-sm">
+          Don't have an account?
+          <a href="#" class="text-blue-600 font-semibold hover:underline ml-1">Create Account</a>
+        </p>
+      </div>
+      
+      <div class="mt-4 text-center">
+        <p class="text-xs text-gray-400">
+          <i class="fas fa-shield-alt"></i> Secure authentication • 256-bit encryption
+        </p>
+      </div>
+    </div>
+    
+    <!-- Professional Footer -->
+    <div class="mt-10 text-center">
+      <!-- Social Icons -->
+      <div class="flex justify-center space-x-4 mb-6">
+        <a href="#" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all duration-200 group">
+          <i class="fab fa-facebook-f text-white/60 group-hover:text-white text-sm"></i>
+        </a>
+        <a href="#" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all duration-200 group">
+          <i class="fab fa-twitter text-white/60 group-hover:text-white text-sm"></i>
+        </a>
+        <a href="#" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all duration-200 group">
+          <i class="fab fa-linkedin-in text-white/60 group-hover:text-white text-sm"></i>
+        </a>
+        <a href="#" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all duration-200 group">
+          <i class="fab fa-github text-white/60 group-hover:text-white text-sm"></i>
+        </a>
+        <a href="#" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all duration-200 group">
+          <i class="fab fa-youtube text-white/60 group-hover:text-white text-sm"></i>
+        </a>
+      </div>
+      
+      <!-- Footer Links -->
+      <div class="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-4">
+        <a href="#" class="text-white/50 hover:text-white text-xs transition">About Us</a>
+        <span class="text-white/30 text-xs">•</span>
+        <a href="#" class="text-white/50 hover:text-white text-xs transition">Privacy Policy</a>
+        <span class="text-white/30 text-xs">•</span>
+        <a href="#" class="text-white/50 hover:text-white text-xs transition">Terms of Service</a>
+        <span class="text-white/30 text-xs">•</span>
+        <a href="#" class="text-white/50 hover:text-white text-xs transition">Help Center</a>
+        <span class="text-white/30 text-xs">•</span>
+        <a href="#" class="text-white/50 hover:text-white text-xs transition">Contact</a>
+      </div>
+      
+      <!-- Copyright -->
+      <div class="pt-4 border-t border-white/10">
+        <p class="text-white/40 text-xs">
+          © 2026 EdWay Learning Management System. All rights reserved.
+        </p>
+        <p class="text-white/30 text-xs mt-1">
+          <i class="fas fa-heart text-red-400/50 text-xs"></i> Empowering education through technology
+        </p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center">
+    <div class="bg-white rounded-2xl p-6 flex flex-col items-center shadow-2xl">
+      <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      <p class="mt-3 text-gray-700 font-medium">Authenticating...</p>
+    </div>
+  </div>
+  
+  <script>
+    // Toggle password visibility
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    
+    if (togglePassword && passwordInput) {
+      togglePassword.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        this.querySelector('i').classList.toggle('fa-eye');
+        this.querySelector('i').classList.toggle('fa-eye-slash');
+      });
+    }
+    
+    // Enter key submission
+    document.getElementById('password')?.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') login();
+    });
+    
+    document.getElementById('email')?.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') login();
+    });
+    
+    // Social login handlers (dummy for now)
+    function socialLogin(provider) {
+      alert(`${provider.charAt(0).toUpperCase() + provider.slice(1)} login will be available soon! This is a demo feature.`);
+    }
+    
+    function showError(message) {
+      let toast = document.getElementById('errorToast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'errorToast';
+        toast.className = 'fixed top-5 left-1/2 transform -translate-x-1/2 z-50 bg-red-500 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-3';
+        toast.style.transition = 'opacity 0.3s';
+        document.body.appendChild(toast);
+      }
+      
+      toast.innerHTML = `<i class="fas fa-exclamation-circle"></i><span>${message}</span>`;
+      toast.style.opacity = '1';
+      toast.style.display = 'flex';
+      
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => {
+          if (toast) toast.style.display = 'none';
+        }, 300);
+      }, 3000);
+    }
+    
+    function shakeForm() {
+      const card = document.querySelector('.glass-card');
+      card.classList.add('shake-animation');
+      setTimeout(() => card.classList.remove('shake-animation'), 400);
+    }
+    
+    async function login() {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      
+      if (!email) {
+        showError("❌ Please enter your email address");
+        shakeForm();
+        return;
+      }
+      
+      if (!password) {
+        showError("🔒 Please enter your password");
+        shakeForm();
+        return;
+      }
+      
+      const loadingOverlay = document.getElementById('loadingOverlay');
+      const loginBtn = document.getElementById('loginBtn');
+      const originalBtnText = loginBtn.innerHTML;
+      loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span> Signing in...</span>';
+      loginBtn.disabled = true;
+      loadingOverlay.classList.remove('hidden');
+      loadingOverlay.classList.add('flex');
+      
+      try {
+        const res = await fetch(`http://127.0.0.1:8000/login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          }
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok && data.token) {
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("role", data.role);
+          localStorage.setItem("user_id", data.user_id);
+          localStorage.setItem("user_name", data.name || email.split('@')[0]);
+          
+          setTimeout(() => {
+            const userRole = data.role.toLowerCase();
+            
+            if (userRole === 'admin') {
+              window.location.href = "admin.html";
+            } else if (userRole === 'teacher') {
+              window.location.href = "teacher.html";
+            } else if (userRole === 'student') {
+              window.location.href = "dashboard.html";
+            } else {
+              window.location.href = "dashboard.html";
+            }
+          }, 500);
+        } else {
+          let errorMsg = "Invalid email or password";
+          if (data.detail) errorMsg = data.detail;
+          
+          showError(`⚠️ ${errorMsg}`);
+          shakeForm();
+          
+          loginBtn.innerHTML = originalBtnText;
+          loginBtn.disabled = false;
+          loadingOverlay.classList.add('hidden');
+        }
+      } catch (error) {
+        console.error("Network error:", error);
+        showError("🌐 Cannot connect to server. Make sure backend is running on port 8000");
+        shakeForm();
+        
+        loginBtn.innerHTML = originalBtnText;
+        loginBtn.disabled = false;
+        loadingOverlay.classList.add('hidden');
+      }
+    }
+  </script>
+</body>
+</html>

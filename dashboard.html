@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EdWay | Student Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    
+    * { font-family: 'Inter', sans-serif; }
+    body { background: #f4f7fc; }
+    .stat-card { transition: all 0.2s ease; }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 20px 25px -12px rgba(0,0,0,0.1); }
+    .nav-item.active { background: rgba(255,255,255,0.15); border-left: 4px solid #ffcd3c; }
+    .toast-notify { animation: slideInRight 0.3s ease-out; }
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    .attendance-present { background-color: #dcfce7; color: #166534; border-left: 4px solid #22c55e; }
+    .attendance-late { background-color: #fef3c7; color: #92400e; border-left: 4px solid #f59e0b; }
+    .attendance-absent { background-color: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444; }
+
+    /* Chatbot Styles */
+    .chatbot-widget {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+    }
+    
+    .chatbot-toggle {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #2c3e8f 0%, #1e2c6a 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+    }
+    
+    .chatbot-toggle:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+    }
+    
+    .chatbot-toggle i {
+      color: white;
+      font-size: 28px;
+    }
+    
+    .chatbot-window {
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      width: 380px;
+      height: 550px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 1000;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+    
+    .chatbot-window.open {
+      display: flex;
+    }
+    
+    .chatbot-header {
+      background: linear-gradient(135deg, #2c3e8f 0%, #1e2c6a 100%);
+      color: white;
+      padding: 15px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .chatbot-header h4 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .chatbot-header h4 i {
+      margin-right: 8px;
+    }
+    
+    .chatbot-close {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 20px;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+    
+    .chatbot-close:hover {
+      opacity: 1;
+    }
+    
+    .chatbot-messages {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      background: #f8f9fa;
+    }
+    
+    .message {
+      margin-bottom: 12px;
+      display: flex;
+    }
+    
+    .message.user {
+      justify-content: flex-end;
+    }
+    
+    .message.bot {
+      justify-content: flex-start;
+    }
+    
+    .message-content {
+      max-width: 80%;
+      padding: 10px 14px;
+      border-radius: 18px;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    
+    .message.user .message-content {
+      background: #2c3e8f;
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+    
+    .message.bot .message-content {
+      background: white;
+      color: #333;
+      border-bottom-left-radius: 4px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    
+    .chatbot-input {
+      padding: 15px;
+      border-top: 1px solid #e0e0e0;
+      display: flex;
+      gap: 10px;
+      background: white;
+    }
+    
+    .chatbot-input input {
+      flex: 1;
+      padding: 10px 14px;
+      border: 1px solid #ddd;
+      border-radius: 25px;
+      outline: none;
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+    
+    .chatbot-input input:focus {
+      border-color: #2c3e8f;
+    }
+    
+    .chatbot-input button {
+      background: #2c3e8f;
+      color: white;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .chatbot-input button:hover {
+      background: #1e2c6a;
+    }
+    
+    .typing-indicator {
+      display: flex;
+      gap: 4px;
+      padding: 8px 12px;
+    }
+    
+    .typing-indicator span {
+      width: 8px;
+      height: 8px;
+      background: #999;
+      border-radius: 50%;
+      animation: bounce 1.4s infinite ease-in-out;
+    }
+    
+    .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+    .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+    
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+
+    /* Pulse animation for chatbot */
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(44, 62, 143, 0.4); }
+      70% { box-shadow: 0 0 0 15px rgba(44, 62, 143, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(44, 62, 143, 0); }
+    }
+    
+    .chatbot-toggle {
+      animation: pulse 2s infinite;
+    }
+  </style>
+</head>
+<body class="antialiased">
+
+<div class="flex h-screen overflow-hidden">
+  <!-- SIDEBAR -->
+  <aside class="w-72 bg-gradient-to-br from-[#0a2540] to-[#1f3a5f] text-white shadow-2xl flex flex-col">
+    <div class="px-6 pt-8 pb-6 border-b border-white/10">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#ffcd3c] to-[#ffa62b] flex items-center justify-center">
+          <i class="fas fa-user-graduate text-[#1e2f4e] text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl font-extrabold">EdWay<span class="text-[#ffcd3c]">.</span></h1>
+          <p class="text-xs text-blue-200/80">Student Portal</p>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 px-4 py-8 space-y-1">
+      <div class="nav-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer hover:bg-white/10" data-nav="dashboard">
+        <i class="fas fa-tachometer-alt w-5"></i><span>Dashboard</span>
+      </div>
+      <div class="nav-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer hover:bg-white/10" data-nav="assignments">
+        <i class="fas fa-tasks w-5"></i><span>Assignments</span>
+        <span id="pendingBadge" class="ml-auto bg-red-500 text-xs px-2 py-0.5 rounded-full hidden">0</span>
+      </div>
+      <div class="nav-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer hover:bg-white/10" data-nav="attendance">
+        <i class="fas fa-calendar-check w-5"></i><span>Attendance</span>
+      </div>
+      <div class="nav-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer hover:bg-white/10" data-nav="grades">
+        <i class="fas fa-chart-line w-5"></i><span>Grades & Reports</span>
+      </div>
+      <div class="nav-item flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer hover:bg-white/10" data-nav="notifications">
+        <i class="fas fa-bell w-5"></i><span>Notifications</span>
+        <span id="notifBadge" class="ml-auto bg-red-500 text-xs px-2 py-0.5 rounded-full hidden">0</span>
+      </div>
+    </nav>
+    <div class="p-5 border-t border-white/10">
+      <div class="flex items-center gap-3 bg-white/5 rounded-xl p-3">
+        <div class="w-9 h-9 rounded-full bg-[#ffcd3c] flex items-center justify-center text-[#1f3a5f] font-bold">
+          <span id="userInitial">S</span>
+        </div>
+        <div class="flex-1">
+          <p class="text-sm font-semibold" id="userName">Student</p>
+          <p class="text-xs text-blue-200/70" id="userClass">Class: -</p>
+        </div>
+        <button onclick="logout()" class="text-white/70 hover:text-white"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 overflow-y-auto bg-[#f0f4f9]">
+    <div class="sticky top-0 z-20 bg-white/80 backdrop-blur-md shadow-sm px-8 py-4 flex justify-between items-center">
+      <div>
+        <h2 id="pageTitle" class="text-2xl font-bold text-[#1e2f4e]">Dashboard</h2>
+        <p class="text-sm text-gray-500">Welcome back, <span id="greetingName">learner</span> 👋</p>
+      </div>
+      <div class="bg-white rounded-full px-4 py-2 text-sm font-medium shadow-sm">
+        <i class="fas fa-user-graduate mr-2 text-[#2c3e8f]"></i><span id="roleBadge">Student</span>
+      </div>
+    </div>
+    <div id="pageContent" class="p-6 md:p-8"></div>
+  </main>
+</div>
+
+<!-- Submit Assignment Modal with File Upload -->
+<div id="submitModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+    <div class="bg-gradient-to-r from-[#0a2540] to-[#1f3a5f] px-6 py-4 flex justify-between">
+      <h3 class="text-xl font-bold text-white"><i class="fas fa-upload mr-2"></i> Submit Assignment</h3>
+      <button onclick="closeSubmitModal()" class="text-white/80 hover:text-white text-2xl">&times;</button>
+    </div>
+    <div class="p-6">
+      <p class="font-semibold mb-2" id="modalAssignmentTitle">Assignment Title</p>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Upload File (PDF, DOC, TXT)</label>
+        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition cursor-pointer" id="uploadArea">
+          <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
+          <p class="text-sm text-gray-500">Click or drag file to upload</p>
+          <p class="text-xs text-gray-400 mt-1">Max file size: 10MB</p>
+          <input type="file" id="fileInput" class="hidden" accept=".pdf,.doc,.docx,.txt,.zip">
+        </div>
+        <div id="selectedFile" class="mt-2 hidden">
+          <div class="flex items-center justify-between bg-gray-50 p-2 rounded">
+            <div class="flex items-center gap-2">
+              <i class="fas fa-file-alt text-blue-500"></i>
+              <span id="fileName" class="text-sm text-gray-600"></span>
+            </div>
+            <button onclick="clearFile()" class="text-red-500 hover:text-red-700">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Additional Comments (Optional)</label>
+        <textarea id="submissionComments" rows="3" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Add any comments for the teacher..."></textarea>
+      </div>
+      <div class="flex gap-3 mt-4">
+        <button onclick="closeSubmitModal()" class="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50">Cancel</button>
+        <button onclick="submitAssignment()" class="flex-1 bg-[#2c3e8f] text-white rounded-lg py-2 hover:bg-[#1e2c6a]">Submit Assignment</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AI Chatbot Bubble -->
+<div class="chatbot-widget">
+  <div class="chatbot-toggle" onclick="toggleChatbot()">
+    <i class="fas fa-robot"></i>
+  </div>
+  <div class="chatbot-window" id="chatbotWindow">
+    <div class="chatbot-header">
+      <h4><i class="fas fa-robot"></i> EdWay AI Assistant</h4>
+      <button class="chatbot-close" onclick="toggleChatbot()">&times;</button>
+    </div>
+    <div class="chatbot-messages" id="chatMessages">
+      <div class="message bot">
+        <div class="message-content">
+          👋 Hello! I'm your EdWay AI Assistant.<br><br>
+          Ask me about:<br>
+          • 📋 Assignments and deadlines<br>
+          • 📊 Your grades and performance<br>
+          • 📅 Attendance records<br>
+          • 📢 Notifications and updates<br>
+          • 💡 Study tips and guidance
+        </div>
+      </div>
+    </div>
+    <div class="chatbot-input">
+      <input type="text" id="chatInput" placeholder="Type your question here..." onkeypress="if(event.key==='Enter') sendMessage()">
+      <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+const token = localStorage.getItem("token");
+if (!token) window.location.href = "login.html";
+
+let allAssignments = [], allSubmissions = [], allAttendance = [], allNotifications = [];
+let currentAssignment = null;
+let selectedFile = null;
+let isWaitingForResponse = false;
+
+async function apiCall(endpoint, options = {}) {
+  try {
+    const res = await fetch(`http://127.0.0.1:8000${endpoint}`, {
+      ...options,
+      headers: {
+        "Authorization": "Bearer " + token,
+        "Content-Type": "application/json"
+      }
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.error("API Error:", err);
+    return null;
+  }
+}
+
+async function loadData() {
+  allAssignments = await apiCall("/assignments") || [];
+  allSubmissions = await apiCall("/submissions") || [];
+  allAttendance = await apiCall("/attendance") || [];
+  allNotifications = await apiCall("/notifications") || [];
+  updateBadges();
+}
+
+function updateBadges() {
+  const submittedIds = allSubmissions.map(s => s.assignment_id);
+  const pending = allAssignments.filter(a => !submittedIds.includes(a.id)).length;
+  document.getElementById("pendingBadge").classList.toggle("hidden", pending === 0);
+  if (pending > 0) document.getElementById("pendingBadge").innerText = pending;
+  
+  const unread = allNotifications.filter(n => !n.is_read).length;
+  document.getElementById("notifBadge").classList.toggle("hidden", unread === 0);
+  if (unread > 0) document.getElementById("notifBadge").innerText = unread;
+}
+
+// File upload handlers
+document.getElementById('uploadArea')?.addEventListener('click', () => {
+  document.getElementById('fileInput').click();
+});
+
+document.getElementById('fileInput')?.addEventListener('change', (e) => {
+  if (e.target.files && e.target.files[0]) {
+    selectedFile = e.target.files[0];
+    document.getElementById('fileName').innerText = selectedFile.name;
+    document.getElementById('selectedFile').classList.remove('hidden');
+    document.getElementById('uploadArea').classList.add('hidden');
+  }
+});
+
+function clearFile() {
+  selectedFile = null;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('selectedFile').classList.add('hidden');
+  document.getElementById('uploadArea').classList.remove('hidden');
+}
+
+// Dashboard
+async function renderDashboard() {
+  document.getElementById("pageTitle").innerHTML = "<i class='fas fa-chart-pie mr-2'></i> Dashboard";
+  const submittedIds = allSubmissions.map(s => s.assignment_id);
+  const completed = submittedIds.length;
+  const presentDays = allAttendance.filter(a => a.status === "PRESENT").length;
+  const rate = allAttendance.length ? Math.round((presentDays/allAttendance.length)*100) : 0;
+  const graded = allSubmissions.filter(s => s.grade);
+  const avgGrade = graded.length ? Math.round(graded.reduce((a,b)=>a+b.grade,0)/graded.length) : 0;
+  
+  document.getElementById("pageContent").innerHTML = `
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white rounded-2xl p-6 shadow-md border-l-8 border-l-blue-500"><p class="text-gray-500">📋 Assignments</p><p class="text-3xl font-bold">${allAssignments.length}</p><p class="text-xs text-gray-400">${completed} submitted</p></div>
+      <div class="bg-white rounded-2xl p-6 shadow-md border-l-8 border-l-green-500"><p class="text-gray-500">✅ Submissions</p><p class="text-3xl font-bold">${completed}</p></div>
+      <div class="bg-white rounded-2xl p-6 shadow-md border-l-8 border-l-amber-500"><p class="text-gray-500">📅 Attendance</p><p class="text-3xl font-bold">${rate}%</p></div>
+      <div class="bg-white rounded-2xl p-6 shadow-md border-l-8 border-l-purple-500"><p class="text-gray-500">⭐ Avg Grade</p><p class="text-3xl font-bold">${avgGrade}%</p></div>
+    </div>
+    <div class="grid lg:grid-cols-2 gap-8">
+      <div class="bg-white rounded-2xl p-5 shadow-md"><h3 class="font-bold mb-3"><i class="fas fa-tasks mr-2 text-blue-600"></i>Pending Assignments</h3>${allAssignments.filter(a => !submittedIds.includes(a.id)).map(a => `<div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg mb-2"><div><p class="font-medium">${escapeHtml(a.title)}</p><p class="text-xs text-gray-500">Due: ${formatDate(a.deadline)}</p></div><button onclick="openSubmitModal(${a.id}, '${escapeHtml(a.title)}')" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">Upload</button></div>`).join('') || '<p class="text-gray-400 text-center py-4">All caught up! 🎉</p>'}</div>
+      <div class="bg-white rounded-2xl p-5 shadow-md"><h3 class="font-bold mb-3"><i class="fas fa-chart-line mr-2 text-green-600"></i>Performance Trend</h3><canvas id="gradeChart" height="200"></canvas></div>
+    </div>
+    <div class="mt-8 bg-white rounded-2xl p-5 shadow-md"><h3 class="font-bold mb-3"><i class="fas fa-bell mr-2 text-amber-500"></i>Recent Notifications</h3>${allNotifications.slice(0,5).map(n => `<div class="p-3 bg-gray-50 rounded-lg mb-2"><p class="font-medium text-sm">${escapeHtml(n.title)}</p><p class="text-xs text-gray-500">${escapeHtml(n.message)}</p></div>`).join('')}</div>
+  `;
+  setTimeout(() => {
+    const ctx = document.getElementById('gradeChart')?.getContext('2d');
+    if (ctx) {
+      const gradedSubs = allSubmissions.filter(s => s.grade).slice(-5);
+      new Chart(ctx, { type: 'line', data: { labels: gradedSubs.map(s => s.assignment_title || 'A'), datasets: [{ label: 'Grades', data: gradedSubs.map(s => s.grade), borderColor: '#2c3e8f', tension: 0.3 }] } });
+    }
+  }, 100);
+}
+
+// Assignments Page
+async function renderAssignments() {
+  document.getElementById("pageTitle").innerHTML = "<i class='fas fa-tasks mr-2'></i> My Assignments";
+  const submittedIds = allSubmissions.map(s => s.assignment_id);
+  document.getElementById("pageContent").innerHTML = `
+    <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+      <table class="min-w-full">
+        <thead class="bg-gray-100"><tr><th class="px-6 py-3 text-left">Assignment</th><th class="px-6 py-3">Deadline</th><th class="px-6 py-3">Status</th><th class="px-6 py-3">Grade</th><th class="px-6 py-3">Action</th></tr></thead>
+        <tbody>${allAssignments.map(a => {
+          const sub = allSubmissions.find(s => s.assignment_id === a.id);
+          return `<tr class="border-t"><td class="px-6 py-4"><div class="font-semibold">${escapeHtml(a.title)}</div><div class="text-xs text-gray-400">${escapeHtml(a.description || '')}</div></td><td class="px-6 py-4">${formatDate(a.deadline)}</td><td class="px-6 py-4">${sub ? '<span class="text-green-600">✓ Submitted</span>' : '<span class="text-red-600">Pending</span>'}</td><td class="px-6 py-4">${sub?.grade ? `<span class="font-bold text-green-600">${sub.grade}%</span>` : '-'}</td><td class="px-6 py-4">${!sub ? `<button onclick="openSubmitModal(${a.id}, '${escapeHtml(a.title)}')" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"><i class="fas fa-upload mr-1"></i> Upload</button>` : sub.grade ? '<span class="text-green-600">✓ Graded</span>' : '<span class="text-gray-400">Awaiting Grade</span>'}</td></tr>`;
+        }).join('')}</tbody>
+      </table>
+    </div>
+    <div class="mt-6 bg-blue-50 rounded-xl p-5 border border-blue-100"><i class="fas fa-info-circle text-blue-600 mr-2"></i><span class="text-sm text-blue-800">Upload PDF, DOC, TXT, or ZIP files for your assignments.</span></div>
+  `;
+}
+
+// Attendance Page with Clear Colors
+function renderAttendance() {
+  document.getElementById("pageTitle").innerHTML = "<i class='fas fa-calendar-check mr-2'></i> Attendance History";
+  const present = allAttendance.filter(a => a.status === "PRESENT").length;
+  const late = allAttendance.filter(a => a.status === "LATE").length;
+  const absent = allAttendance.filter(a => a.status === "ABSENT").length;
+  const rate = allAttendance.length ? Math.round((present/allAttendance.length)*100) : 0;
+  
+  // Group attendance by month
+  const attendanceByMonth = {};
+  allAttendance.forEach(att => {
+    const date = new Date(att.date);
+    const monthYear = `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`;
+    if (!attendanceByMonth[monthYear]) attendanceByMonth[monthYear] = [];
+    attendanceByMonth[monthYear].push(att);
+  });
+  
+  let monthsHtml = '';
+  for (const [month, records] of Object.entries(attendanceByMonth)) {
+    monthsHtml += `
+      <div class="mb-8">
+        <h4 class="font-bold text-lg text-gray-700 mb-3 border-b pb-2">${month}</h4>
+        <div class="grid grid-cols-7 gap-2 mb-4">
+          ${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => `<div class="text-center text-xs font-semibold text-gray-500 py-2">${day}</div>`).join('')}
+        </div>
+        <div class="grid grid-cols-7 gap-2">
+          ${renderCalendarDays(records)}
+        </div>
+      </div>
+    `;
+  }
+  
+  document.getElementById("pageContent").innerHTML = `
+    <div class="grid md:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white rounded-2xl p-6 text-center shadow-md"><div class="w-16 h-16 mx-auto rounded-full bg-green-100 flex items-center justify-center mb-2"><i class="fas fa-check-circle text-3xl text-green-600"></i></div><p class="text-2xl font-bold text-green-600">${present}</p><p class="text-gray-500 text-sm">Present</p></div>
+      <div class="bg-white rounded-2xl p-6 text-center shadow-md"><div class="w-16 h-16 mx-auto rounded-full bg-yellow-100 flex items-center justify-center mb-2"><i class="fas fa-clock text-3xl text-yellow-600"></i></div><p class="text-2xl font-bold text-yellow-600">${late}</p><p class="text-gray-500 text-sm">Late</p></div>
+      <div class="bg-white rounded-2xl p-6 text-center shadow-md"><div class="w-16 h-16 mx-auto rounded-full bg-red-100 flex items-center justify-center mb-2"><i class="fas fa-times-circle text-3xl text-red-600"></i></div><p class="text-2xl font-bold text-red-600">${absent}</p><p class="text-gray-500 text-sm">Absent</p></div>
+      <div class="bg-white rounded-2xl p-6 text-center shadow-md"><div class="w-16 h-16 mx-auto rounded-full bg-blue-100 flex items-center justify-center mb-2"><i class="fas fa-chart-line text-3xl text-blue-600"></i></div><p class="text-2xl font-bold text-blue-600">${rate}%</p><p class="text-gray-500 text-sm">Attendance Rate</p></div>
+    </div>
+    <div class="bg-white rounded-2xl p-6 shadow-md">
+      <h3 class="font-bold text-xl mb-4 flex items-center gap-2"><i class="fas fa-calendar-alt text-blue-600"></i> Attendance Calendar</h3>
+      <div class="mb-4 flex gap-4 justify-center">
+        <div class="flex items-center gap-2"><div class="w-4 h-4 rounded-full bg-green-500"></div><span class="text-xs">Present</span></div>
+        <div class="flex items-center gap-2"><div class="w-4 h-4 rounded-full bg-yellow-500"></div><span class="text-xs">Late</span></div>
+        <div class="flex items-center gap-2"><div class="w-4 h-4 rounded-full bg-red-500"></div><span class="text-xs">Absent</span></div>
+        <div class="flex items-center gap-2"><div class="w-4 h-4 rounded-full bg-gray-300"></div><span class="text-xs">No Data</span></div>
+      </div>
+      ${monthsHtml}
+    </div>
+  `;
+}
+
+function renderCalendarDays(records) {
+  if (!records.length) return '<div class="text-center text-gray-400 col-span-7 py-8">No attendance records available</div>';
+  
+  const recordMap = {};
+  records.forEach(r => { recordMap[r.date] = r.status; });
+  
+  const firstRecord = new Date(records[0].date);
+  const lastRecord = new Date(records[records.length - 1].date);
+  const startDate = new Date(firstRecord.getFullYear(), firstRecord.getMonth(), 1);
+  const endDate = new Date(lastRecord.getFullYear(), lastRecord.getMonth() + 1, 0);
+  
+  const days = [];
+  const currentDate = new Date(startDate);
+  const firstDayOfMonth = startDate.getDay();
+  
+  for (let i = 0; i < firstDayOfMonth; i++) {
+    days.push(`<div class="text-center p-2 rounded-lg bg-gray-50 text-gray-400 text-sm"></div>`);
+  }
+  
+  while (currentDate <= endDate) {
+    const dateStr = currentDate.toISOString().split('T')[0];
+    const status = recordMap[dateStr];
+    let bgColor = 'bg-gray-100';
+    let textColor = 'text-gray-600';
+    let icon = '';
+    
+    if (status === 'PRESENT') {
+      bgColor = 'bg-green-100';
+      textColor = 'text-green-700';
+      icon = '<i class="fas fa-check-circle text-green-600 text-xs block mt-1"></i>';
+    } else if (status === 'LATE') {
+      bgColor = 'bg-yellow-100';
+      textColor = 'text-yellow-700';
+      icon = '<i class="fas fa-clock text-yellow-600 text-xs block mt-1"></i>';
+    } else if (status === 'ABSENT') {
+      bgColor = 'bg-red-100';
+      textColor = 'text-red-700';
+      icon = '<i class="fas fa-times-circle text-red-600 text-xs block mt-1"></i>';
+    }
+    
+    days.push(`
+      <div class="text-center p-2 rounded-lg ${bgColor} ${textColor} font-medium text-sm">
+        ${currentDate.getDate()}
+        ${icon}
+      </div>
+    `);
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  
+  return days.join('');
+}
+
+function renderGrades() {
+  document.getElementById("pageTitle").innerHTML = "<i class='fas fa-chart-line mr-2'></i> Grades & Progress Report";
+  const graded = allSubmissions.filter(s => s.grade);
+  const avg = graded.length ? Math.round(graded.reduce((a,b)=>a+b.grade,0)/graded.length) : 0;
+  document.getElementById("pageContent").innerHTML = `
+    <div class="grid md:grid-cols-2 gap-6 mb-6"><div class="bg-white rounded-2xl p-6 text-center"><div class="w-32 h-32 mx-auto rounded-full bg-gradient-to-r from-green-400 to-blue-500 flex items-center justify-center"><span class="text-3xl font-bold text-white">${avg}%</span></div><h3 class="text-xl font-bold mt-3">Overall Average</h3></div><div class="bg-white rounded-2xl p-5"><h3 class="font-bold mb-3">Grade Breakdown</h3>${graded.map(s => `<div class="mb-3"><div class="flex justify-between"><span>${escapeHtml(s.assignment_title || 'Assignment')}</span><span class="font-bold">${s.grade}%</span></div><div class="w-full bg-gray-200 rounded-full h-2"><div class="bg-blue-500 h-2 rounded-full" style="width: ${s.grade}%"></div></div>${s.feedback ? `<p class="text-xs text-gray-500 mt-1">📝 ${escapeHtml(s.feedback)}</p>` : ''}</div>`).join('')}</div></div>
+    <div class="bg-white rounded-2xl p-5"><h3 class="font-bold mb-3">Performance Summary</h3><p>${avg >= 80 ? 'Excellent performance! Keep it up! 🎉' : avg >= 60 ? 'Good job! You can improve further. 💪' : 'Keep working hard! You\'ll get there. 📚'}</p></div>
+  `;
+}
+
+async function renderNotifications() {
+  document.getElementById("pageTitle").innerHTML = "<i class='fas fa-bell mr-2'></i> Notifications";
+  for (let n of allNotifications.filter(n => !n.is_read)) {
+    await fetch(`http://127.0.0.1:8000/notifications/${n.id}/read`, { method: "PUT", headers: { "Authorization": "Bearer " + token } });
+  }
+  await loadData();
+  document.getElementById("pageContent").innerHTML = `<div class="bg-white rounded-2xl">${allNotifications.map(n => `<div class="p-4 border-b"><p class="font-semibold">${escapeHtml(n.title)}</p><p class="text-sm text-gray-600">${escapeHtml(n.message)}</p><p class="text-xs text-gray-400 mt-1">${formatDate(n.created_at)}</p></div>`).join('')}</div>`;
+}
+
+function openSubmitModal(id, title) { 
+  currentAssignment = { id, title }; 
+  document.getElementById("modalAssignmentTitle").innerText = title; 
+  document.getElementById("submissionComments").value = "";
+  clearFile();
+  document.getElementById("submitModal").classList.remove("hidden"); 
+}
+
+function closeSubmitModal() { 
+  document.getElementById("submitModal").classList.add("hidden"); 
+  clearFile();
+}
+
+async function submitAssignment() {
+  if (!selectedFile) {
+    alert("Please select a file to upload");
+    return;
+  }
+  
+  const comments = document.getElementById("submissionComments").value;
+  
+  // In a real implementation, you'd upload the file to a server
+  // For now, we'll simulate by sending the file name and comments
+  const content = `File: ${selectedFile.name}\nComments: ${comments}\nFile size: ${(selectedFile.size / 1024).toFixed(2)} KB`;
+  
+  const response = await fetch(`http://127.0.0.1:8000/submit?assignment_id=${currentAssignment.id}&content=${encodeURIComponent(content)}`, {
+    method: "POST",
+    headers: { "Authorization": "Bearer " + token }
+  });
+  
+  if (response.ok) {
+    alert(`Assignment "${currentAssignment.title}" submitted successfully!\nFile: ${selectedFile.name}\nComments: ${comments || 'None'}`);
+    closeSubmitModal();
+    await loadData();
+    renderAssignments();
+  } else {
+    alert("Failed to submit assignment. Please try again.");
+  }
+}
+
+// ==================== CHATBOT FUNCTIONS ====================
+
+function toggleChatbot() {
+  const window = document.getElementById('chatbotWindow');
+  window.classList.toggle('open');
+}
+
+async function sendMessage() {
+  if (isWaitingForResponse) return;
+  
+  const input = document.getElementById('chatInput');
+  const message = input.value.trim();
+  if (!message) return;
+  
+  // Add user message to chat
+  addMessage(message, 'user');
+  input.value = '';
+  
+  // Show typing indicator
+  showTypingIndicator();
+  isWaitingForResponse = true;
+  
+  try {
+    // Get context from dashboard data
+    const pendingAssignments = allAssignments.filter(a => !allSubmissions.map(s => s.assignment_id).includes(a.id)).length;
+    const completedAssignments = allSubmissions.length;
+    const avgGrade = allSubmissions.filter(s => s.grade).length ? Math.round(allSubmissions.filter(s => s.grade).reduce((a,b)=>a+b.grade,0)/allSubmissions.filter(s=>s.grade).length) : 0;
+    const attendanceRate = allAttendance.length ? Math.round((allAttendance.filter(a => a.status === "PRESENT").length / allAttendance.length) * 100) : 0;
+    
+    // Smart responses based on user message
+    let reply = "";
+    const lowerMsg = message.toLowerCase();
+    
+    if (lowerMsg.includes('assignment') || lowerMsg.includes('homework') || lowerMsg.includes('task')) {
+      reply = `📋 You have ${pendingAssignments} pending assignment(s) and ${completedAssignments} completed submission(s). Upcoming deadlines are shown on your dashboard. Need help with a specific assignment?`;
+    } 
+    else if (lowerMsg.includes('grade') || lowerMsg.includes('score') || lowerMsg.includes('mark')) {
+      reply = `📊 Your current average grade is ${avgGrade}%. ${avgGrade >= 80 ? 'Excellent work! Keep it up! 🎉' : avgGrade >= 60 ? 'Good job! You can improve further! 💪' : 'Keep working hard! Review your feedback to improve. 📚'}`;
+    }
+    else if (lowerMsg.includes('attendance')) {
+      reply = `📅 Your attendance rate is ${attendanceRate}%. ${attendanceRate >= 90 ? 'Great attendance! Keep it up! 🎯' : attendanceRate >= 75 ? 'Good attendance! Try to be more consistent. ⏰' : 'Please improve your attendance. Regular attendance is important for success! 📖'}`;
+    }
+    else if (lowerMsg.includes('deadline') || lowerMsg.includes('due')) {
+      const upcoming = allAssignments.filter(a => new Date(a.deadline) > new Date()).slice(0, 3);
+      if (upcoming.length > 0) {
+        reply = `⏰ Upcoming deadlines:\n${upcoming.map(a => `• ${a.title}: ${formatDate(a.deadline)}`).join('\n')}`;
+      } else {
+        reply = "🎉 Great job! No upcoming deadlines at the moment. Relax or work ahead!";
+      }
+    }
+    else if (lowerMsg.includes('hello') || lowerMsg.includes('hi') || lowerMsg.includes('hey')) {
+      reply = "👋 Hello! I'm your EdWay AI Assistant. How can I help you today? Ask me about assignments, grades, attendance, or deadlines!";
+    }
+    else if (lowerMsg.includes('help')) {
+      reply = "💡 I can help you with:\n• Checking your assignments and deadlines\n• Viewing your grades and performance\n• Tracking your attendance\n• Answering questions about your courses\n• Providing study tips\n\nJust ask me anything!";
+    }
+    else if (lowerMsg.includes('tip') || lowerMsg.includes('advice')) {
+      const tips = [
+        "📚 Break down large assignments into smaller tasks to avoid last-minute stress!",
+        "⏰ Set reminders for assignment deadlines a few days before they're due.",
+        "📝 Review graded assignments to understand where you can improve.",
+        "🎯 Attend all classes - good attendance correlates with better grades!",
+        "💪 Start assignments early so you have time to ask questions if needed."
+      ];
+      reply = tips[Math.floor(Math.random() * tips.length)];
+    }
+    else {
+      reply = `Thank you for your question! I'm here to help with:\n• Assignment deadlines and submissions\n• Grade tracking and performance\n• Attendance records\n• Course information\n\nCould you please rephrase your question or ask me about one of these topics?`;
+    }
+    
+    removeTypingIndicator();
+    addMessage(reply, 'bot');
+    
+  } catch (error) {
+    console.error('Chat error:', error);
+    removeTypingIndicator();
+    addMessage("I'm having trouble connecting. Please try again in a moment.", 'bot');
+  }
+  
+  isWaitingForResponse = false;
+}
+
+function addMessage(text, sender) {
+  const messagesDiv = document.getElementById('chatMessages');
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `message ${sender}`;
+  messageDiv.innerHTML = `<div class="message-content">${escapeHtml(text).replace(/\n/g, '<br>')}</div>`;
+  messagesDiv.appendChild(messageDiv);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function showTypingIndicator() {
+  const messagesDiv = document.getElementById('chatMessages');
+  const typingDiv = document.createElement('div');
+  typingDiv.className = 'message bot';
+  typingDiv.id = 'typingIndicator';
+  typingDiv.innerHTML = `<div class="message-content"><div class="typing-indicator"><span></span><span></span><span></span></div></div>`;
+  messagesDiv.appendChild(typingDiv);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function removeTypingIndicator() {
+  const indicator = document.getElementById('typingIndicator');
+  if (indicator) indicator.remove();
+}
+
+function formatDate(d) { return d ? new Date(d).toLocaleDateString() : 'N/A'; }
+function escapeHtml(str) { return str?.replace(/[&<>]/g, function(m) { return { '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]; }) || ''; }
+function logout() { localStorage.clear(); window.location.href = "login.html"; }
+
+async function init() {
+  const userName = localStorage.getItem("user_name") || "Student";
+  document.getElementById("userName").innerText = userName;
+  document.getElementById("greetingName").innerText = userName.split(' ')[0];
+  document.getElementById("userInitial").innerText = userName.charAt(0).toUpperCase();
+  await loadData();
+  await renderDashboard();
+  document.querySelectorAll('.nav-item').forEach(el => el.addEventListener('click', async (e) => {
+    const nav = el.getAttribute('data-nav');
+    if (nav === 'dashboard') await renderDashboard();
+    else if (nav === 'assignments') await renderAssignments();
+    else if (nav === 'attendance') renderAttendance();
+    else if (nav === 'grades') renderGrades();
+    else if (nav === 'notifications') await renderNotifications();
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    el.classList.add('active');
+  }));
+}
+init();
+</script>
+</body>
+</html>
