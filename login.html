@@ -321,7 +321,7 @@
       loadingOverlay.classList.add('flex');
       
       try {
-        const res = await fetch(`http://127.0.0.1:8000/login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`, {
+        const res = await fetch(`https://edway-lms.onrender.com/login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
