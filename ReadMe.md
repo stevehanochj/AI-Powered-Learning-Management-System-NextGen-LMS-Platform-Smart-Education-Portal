@@ -1,9 +1,3 @@
-# Create requirements.txt with the content above, then run:
-pip install -r requirements.txt
-
-#To run code
-python3 -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
-
 # AI-Powered Learning Management System
 
 A modern LMS platform built with FastAPI, Python, SQLite, and HTML/CSS.
@@ -25,9 +19,12 @@ A modern LMS platform built with FastAPI, Python, SQLite, and HTML/CSS.
 - GitHub
 
 ## Live Demo
-https://edway-lms.onrender.com
+https://edway-lms.onrender.com/dashboard.html
 
 ## Screenshots
+<img width="1440" height="819" alt="Screenshot 2026-04-23 at 5 59 23 AM" src="https://github.com/user-attachments/assets/c740937b-f44f-4a70-a71d-6c6cabc0e7ab" />
+<img width="1438" height="818" alt="Screenshot 2026-04-23 at 5 58 15 AM" src="https://github.com/user-attachments/assets/c9e55b82-a005-43c3-89ca-e44975a2abdf" />
+<img width="1439" height="818" alt="Screenshot 2026-04-23 at 5 57 07 AM" src="https://github.com/user-attachments/assets/9e969553-9d1a-4cce-be1d-b45ff4bf9be2" />
 
 
 ## Author
