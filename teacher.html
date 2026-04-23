@@ -325,7 +325,7 @@ let reportsChart = null;
 
 async function apiCall(endpoint, options = {}) {
   try {
-    const res = await fetch(`http://127.0.0.1:8000${endpoint}`, { 
+    const res = await fetch(`http://https://edway-lms.onrender.com${endpoint}`, { 
       ...options, 
       headers: { 
         "Authorization": "Bearer " + token, 
@@ -473,7 +473,7 @@ async function saveAllAttendance() {
   let saved = 0, failed = 0;
   for (const [studentId, status] of Object.entries(attendanceChanges)) {
     const remarks = document.getElementById(`remarks-${studentId}`)?.value || '';
-    const res = await fetch(`http://127.0.0.1:8000/attendance?student_id=${studentId}&status=${status}&date_str=${attendanceDate}&remarks=${encodeURIComponent(remarks)}`, {
+    const res = await fetch(`http://https://edway-lms.onrender.com/attendance?student_id=${studentId}&status=${status}&date_str=${attendanceDate}&remarks=${encodeURIComponent(remarks)}`, {
       method: "POST", headers: { "Authorization": "Bearer " + token }
     });
     res.ok ? saved++ : failed++;
@@ -638,7 +638,7 @@ async function createAssignment() {
   const deadline = document.getElementById("assignDeadline").value;
   const max_score = document.getElementById("assignMaxScore").value;
   if (!title || !deadline) { alert("Title and deadline required"); return; }
-  await fetch(`http://127.0.0.1:8000/assignments?title=${encodeURIComponent(title)}&description=${encodeURIComponent(desc)}&deadline=${deadline}&max_score=${max_score}`, { method: "POST", headers: { "Authorization": "Bearer " + token } });
+  await fetch(`http://https://edway-lms.onrender.com/assignments?title=${encodeURIComponent(title)}&description=${encodeURIComponent(desc)}&deadline=${deadline}&max_score=${max_score}`, { method: "POST", headers: { "Authorization": "Bearer " + token } });
   closeModal();
   await loadData();
   renderAssignments();
@@ -647,7 +647,7 @@ async function createAssignment() {
 
 async function deleteAssignment(id) {
   if (confirm("Delete this assignment?")) {
-    await fetch(`http://127.0.0.1:8000/assignments/${id}`, { method: "DELETE", headers: { "Authorization": "Bearer " + token } });
+    await fetch(`http://https://edway-lms.onrender.com/assignments/${id}`, { method: "DELETE", headers: { "Authorization": "Bearer " + token } });
     await loadData();
     renderAssignments();
   }
@@ -661,7 +661,7 @@ function closeGradeModal() { document.getElementById("gradeModal").classList.add
 async function submitGrade() {
   const grade = document.getElementById("gradeValue").value;
   const feedback = document.getElementById("gradeFeedback").value;
-  await fetch(`http://127.0.0.1:8000/grade/${currentGrading.id}?grade=${grade}&feedback=${encodeURIComponent(feedback)}`, { method: "PUT", headers: { "Authorization": "Bearer " + token } });
+  await fetch(`http://https://edway-lms.onrender.com/grade/${currentGrading.id}?grade=${grade}&feedback=${encodeURIComponent(feedback)}`, { method: "PUT", headers: { "Authorization": "Bearer " + token } });
   closeGradeModal();
   await loadData();
   renderSubmissions();
