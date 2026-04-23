@@ -366,7 +366,7 @@ let isWaitingForResponse = false;
 
 async function apiCall(endpoint, options = {}) {
   try {
-    const res = await fetch(`http://127.0.0.1:8000${endpoint}`, {
+    const res = await fetch(`http://https://edway-lms.onrender.com${endpoint}`, {
       ...options,
       headers: {
         "Authorization": "Bearer " + token,
@@ -588,7 +588,7 @@ function renderGrades() {
 async function renderNotifications() {
   document.getElementById("pageTitle").innerHTML = "<i class='fas fa-bell mr-2'></i> Notifications";
   for (let n of allNotifications.filter(n => !n.is_read)) {
-    await fetch(`http://127.0.0.1:8000/notifications/${n.id}/read`, { method: "PUT", headers: { "Authorization": "Bearer " + token } });
+    await fetch(`http://https://edway-lms.onrender.com/notifications/${n.id}/read`, { method: "PUT", headers: { "Authorization": "Bearer " + token } });
   }
   await loadData();
   document.getElementById("pageContent").innerHTML = `<div class="bg-white rounded-2xl">${allNotifications.map(n => `<div class="p-4 border-b"><p class="font-semibold">${escapeHtml(n.title)}</p><p class="text-sm text-gray-600">${escapeHtml(n.message)}</p><p class="text-xs text-gray-400 mt-1">${formatDate(n.created_at)}</p></div>`).join('')}</div>`;
@@ -619,7 +619,7 @@ async function submitAssignment() {
   // For now, we'll simulate by sending the file name and comments
   const content = `File: ${selectedFile.name}\nComments: ${comments}\nFile size: ${(selectedFile.size / 1024).toFixed(2)} KB`;
   
-  const response = await fetch(`http://127.0.0.1:8000/submit?assignment_id=${currentAssignment.id}&content=${encodeURIComponent(content)}`, {
+  const response = await fetch(`http://https://edway-lms.onrender.com/submit?assignment_id=${currentAssignment.id}&content=${encodeURIComponent(content)}`, {
     method: "POST",
     headers: { "Authorization": "Bearer " + token }
   });
