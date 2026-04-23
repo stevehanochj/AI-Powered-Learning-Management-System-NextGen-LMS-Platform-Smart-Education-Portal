@@ -365,7 +365,7 @@ let systemStats = {};
 
 async function apiCall(endpoint, options = {}) {
   try {
-    const res = await fetch(`http://127.0.0.1:8000${endpoint}`, {
+    const res = await fetch(`http://https://edway-lms.onrender.com${endpoint}`, {
       ...options,
       headers: {
         "Authorization": "Bearer " + token,
@@ -690,12 +690,12 @@ async function saveUser() {
   }
   
   if (editingUserId) {
-    await fetch(`http://127.0.0.1:8000/admin/users/${editingUserId}?name=${encodeURIComponent(name)}&role=${role}&class_name=${encodeURIComponent(className)}`, {
+    await fetch(`http://https://edway-lms.onrender.com/admin/users/${editingUserId}?name=${encodeURIComponent(name)}&role=${role}&class_name=${encodeURIComponent(className)}`, {
       method: "PUT",
       headers: { "Authorization": "Bearer " + token }
     });
   } else {
-    await fetch(`http://127.0.0.1:8000/admin/users`, {
+    await fetch(`http://https://edway-lms.onrender.com/admin/users`, {
       method: "POST",
       headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password, role, class_name: className })
@@ -708,7 +708,7 @@ async function saveUser() {
 }
 
 async function toggleUserStatus(id, activate) {
-  await fetch(`http://127.0.0.1:8000/admin/users/${id}?is_active=${activate}`, {
+  await fetch(`http://https://edway-lms.onrender.com/admin/users/${id}?is_active=${activate}`, {
     method: "PUT",
     headers: { "Authorization": "Bearer " + token }
   });
@@ -717,7 +717,7 @@ async function toggleUserStatus(id, activate) {
 
 async function deleteUser(id) {
   if (confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
-    await fetch(`http://127.0.0.1:8000/admin/users/${id}`, {
+    await fetch(`http://https://edway-lms.onrender.com/admin/users/${id}`, {
       method: "DELETE",
       headers: { "Authorization": "Bearer " + token }
     });
